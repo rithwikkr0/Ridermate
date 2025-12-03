@@ -1,19 +1,22 @@
 name: Build APK
 
-on:
-  push:
-    branches:
-      - main
+on: push
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./ridermate_app  # ← Add this line
+
     steps:
       - uses: actions/checkout@v3
       
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.38.3'
+          channel: 'stable'
       
       - run: flutter pub get
       
@@ -21,5 +24,5 @@ jobs:
       
       - uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
+          name: app-release
           path: ridermate_app/build/app/outputs/flutter-apk/app-release.apk
