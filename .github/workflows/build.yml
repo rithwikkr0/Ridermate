@@ -19,7 +19,7 @@ jobs:
       
       - run: cd ridermate_app && flutter build apk --release
       
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
           path: ridermate_app/build/app/outputs/flutter-apk/app-release.apk
