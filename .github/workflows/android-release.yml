@@ -1,0 +1,81 @@
+name: Android Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        working-directory: ./ridermate_app
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: ./ridermate_app
+        run: flutter build apk --release
+
+      - name: Build App Bundle
+        working-directory: ./ridermate_app
+        run: flutter build appbundle --release
+
+      - name: Sign APK
+        if: env.KEYSTORE_FILE != ''
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: ridermate_app/build/app/outputs/flutter-apk
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          KEYSTORE_FILE: ${{ secrets.ANDROID_SIGNING_KEY }}
+        continue-on-error: true
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ridermate_app/build/app/outputs/flutter-apk/app-release.apk
+            ridermate_app/build/app/outputs/bundle/release/app-release.aab
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Google Play (Internal Testing)
+        if: env.PLAY_SERVICE_ACCOUNT != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.ridermate.app
+          releaseFiles: ridermate_app/build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+        env:
+          PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        continue-on-error: true

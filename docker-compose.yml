@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Flutter Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ridermate-web
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - ridermate-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development environment with hot reload
+  dev:
+    image: ubuntu:22.04
+    container_name: ridermate-dev
+    working_dir: /app
+    volumes:
+      - ./ridermate_app:/app
+      - flutter-pub-cache:/root/.pub-cache
+    ports:
+      - "8080:8080"
+    command: |
+      bash -c "
+        apt-get update && apt-get install -y curl git wget unzip xz-utils libglu1-mesa &&
+        git clone https://github.com/flutter/flutter.git /flutter --depth 1 --branch stable &&
+        export PATH=/flutter/bin:\$PATH &&
+        flutter doctor &&
+        cd /app &&
+        flutter pub get &&
+        flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0
+      "
+    networks:
+      - ridermate-network
+    profiles:
+      - dev
+
+networks:
+  ridermate-network:
+    driver: bridge
+
+volumes:
+  flutter-pub-cache:

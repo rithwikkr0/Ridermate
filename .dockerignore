@@ -1,0 +1,44 @@
+# Git files
+.git
+.gitignore
+.github
+
+# Flutter build output
+ridermate_app/build/
+ridermate_app/.dart_tool/
+ridermate_app/.packages
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Test files
+ridermate_app/test/
+ridermate_app/test_driver/
+
+# Platform-specific build directories
+ridermate_app/android/
+ridermate_app/ios/
+ridermate_app/linux/
+ridermate_app/macos/
+ridermate_app/windows/
+
+# Cache
+.cache/
+tmp/
+temp/
+
+# Environment files
+.env*
+!.env.example
