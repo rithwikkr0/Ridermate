@@ -1,0 +1,34 @@
+version: 2
+updates:
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    open-pull-requests-limit: 10
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    open-pull-requests-limit: 5
+
+  # Pub (Dart/Flutter) dependencies
+  - package-ecosystem: "pub"
+    directory: "/ridermate_app"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "flutter"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "flutter"
+        update-types: ["version-update:semver-major"]
