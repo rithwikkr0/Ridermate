@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { createRide, getRideById, updateRide, getUserRides, updateUser, getUserById } from '../services/firebase.service';
-import { Ride, Location } from '../types/ride.types';
+import { Location } from '../types/ride.types';
 import { ApiResponse, AppError } from '../types/api.types';
 
 export const startRide = async (

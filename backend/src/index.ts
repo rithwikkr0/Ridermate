@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(morgan(config.nodeEnv === 'production' ? 'combined' : 'dev')); // Request logging
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'RiderMate API is running',

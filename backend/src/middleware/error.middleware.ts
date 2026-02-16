@@ -3,9 +3,9 @@ import { AppError, ErrorResponse } from '../types/api.types';
 
 export const errorHandler = (
   err: Error | AppError,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   console.error('Error:', err);
 
@@ -68,7 +68,7 @@ export const errorHandler = (
 
 export const notFoundHandler = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   const error = new AppError(404, `Route ${req.originalUrl} not found`, 'NOT_FOUND');

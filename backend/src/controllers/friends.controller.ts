@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { createFriendRequest, getUserFriends } from '../services/firebase.service';
-import { FriendRequest } from '../types/other.types';
 import { ApiResponse, AppError } from '../types/api.types';
 
 export const sendFriendRequest = async (

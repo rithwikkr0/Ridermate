@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { config } from '../config/server.config';
-import { User, UserRegistrationData, UserLoginData, AuthResponse } from '../types/user.types';
+import { UserRegistrationData, UserLoginData, AuthResponse } from '../types/user.types';
 import { createUser, getUserByEmail } from './firebase.service';
 import { AppError } from '../types/api.types';
 
@@ -19,9 +19,10 @@ export const comparePassword = async (
 };
 
 export const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
-  });
+  const options: SignOptions = {
+    expiresIn: config.jwt.expiresIn as any,
+  };
+  return jwt.sign({ userId }, config.jwt.secret, options);
 };
 
 export const registerUser = async (

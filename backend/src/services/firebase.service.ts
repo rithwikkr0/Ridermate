@@ -1,8 +1,7 @@
 import { getFirestore } from '../config/firebase.config';
-import { User, UserRegistrationData } from '../types/user.types';
-import { Ride, StartRideData, EndRideData } from '../types/ride.types';
-import { Memory, CreateMemoryData, Friend, FriendRequest } from '../types/other.types';
-import { AppError } from '../types/api.types';
+import { User } from '../types/user.types';
+import { Ride } from '../types/ride.types';
+import { Memory, Friend } from '../types/other.types';
 
 const db = getFirestore();
 
