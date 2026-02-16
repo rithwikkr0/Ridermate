@@ -45,5 +45,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Privacy permissions for Memory/Journal System -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RiderMate needs your location to tag memories and track your rides.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>RiderMate needs your location to track rides even in background.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>RiderMate needs access to your camera to capture photos for memories.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>RiderMate needs access to your photo library to select photos for memories.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>RiderMate needs permission to save photos to your library.</string>
 </dict>
 </plist>
