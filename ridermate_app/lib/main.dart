@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import 'dart:math';
+import 'models/ride_metrics.dart';
+import 'models/weekly_analysis.dart';
+import 'widgets/ai_chat_widget.dart';
+import 'widgets/weekly_analysis_card.dart';
+import 'widgets/ride_history_with_ai.dart';
+import 'widgets/ai_analysis_display.dart';
+import 'services/ai_analysis_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // If .env file doesn't exist, continue with defaults
+    print('Warning: .env file not found, using defaults');
+  }
+  
   runApp(RiderMateApp());
 }
 
@@ -39,6 +56,21 @@ class _HomeScreenState extends State<HomeScreen> {
     RideHistory('Route 2', 15.7, 32, DateTime.now().subtract(Duration(days: 2))),
     RideHistory('Route 3', 32.1, 58, DateTime.now().subtract(Duration(days: 3))),
   ];
+
+  // Convert old ride history to RideMetrics for AI
+  List<RideMetrics> _convertToRideMetrics() {
+    return rideHistory.map((ride) {
+      return RideMetrics(
+        distance: ride.distance,
+        duration: ride.duration * 60, // convert to seconds
+        avgSpeed: (ride.distance / (ride.duration / 60)),
+        overspeeds: Random().nextInt(3),
+        maxSpeed: (ride.distance / (ride.duration / 60)) * 1.5,
+        speedPattern: List.generate(10, (_) => (ride.distance / (ride.duration / 60)) + Random().nextDouble() * 5),
+        timestamp: ride.date,
+      );
+    }).toList();
+  }
 
   List<String> friends = ['Alex', 'Jordan', 'Sam', 'Casey'];
   List<Memory> memories = [
@@ -97,16 +129,21 @@ class _HomeScreenState extends State<HomeScreen> {
             // Tab Navigation
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _buildTab('Today', 0),
-                  SizedBox(width: 10),
-                  _buildTab('History', 1),
-                  SizedBox(width: 10),
-                  _buildTab('Friends', 2),
-                  SizedBox(width: 10),
-                  _buildTab('Memories', 3),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab('Today', 0),
+                    SizedBox(width: 10),
+                    _buildTab('History', 1),
+                    SizedBox(width: 10),
+                    _buildTab('AI Chat', 2),
+                    SizedBox(width: 10),
+                    _buildTab('Friends', 3),
+                    SizedBox(width: 10),
+                    _buildTab('Memories', 4),
+                  ],
+                ),
               ),
             ),
 
@@ -114,15 +151,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Content based on tab
             Expanded(
-              child: SingleChildScrollView(
-                child: selectedTab == 0
-                    ? _buildTodayTab()
-                    : selectedTab == 1
-                        ? _buildHistoryTab()
-                        : selectedTab == 2
-                            ? _buildFriendsTab()
-                            : _buildMemoriesTab(),
-              ),
+              child: selectedTab == 0
+                  ? SingleChildScrollView(child: _buildTodayTab())
+                  : selectedTab == 1
+                      ? SingleChildScrollView(child: _buildHistoryTab())
+                      : selectedTab == 2
+                          ? _buildAIChatTab()
+                          : selectedTab == 3
+                              ? SingleChildScrollView(child: _buildFriendsTab())
+                              : SingleChildScrollView(child: _buildMemoriesTab()),
             ),
           ],
         ),
@@ -236,6 +273,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
         SizedBox(height: 20),
 
+        // Weekly Analysis Card
+        FutureBuilder<WeeklyAnalysis>(
+          future: _getWeeklyAnalysis(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return WeeklyAnalysisCard(analysis: snapshot.data!);
+            } else {
+              return Container(
+                margin: EdgeInsets.all(20),
+                padding: EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF0066FF),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+
+        SizedBox(height: 20),
+
         // Referral Card
         Container(
           margin: EdgeInsets.all(20),
@@ -288,22 +351,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHistoryTab() {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.all(20),
-          child: Text(
-            'Recent Rides',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        ...rideHistory.map((ride) => _buildRideCard(ride)).toList(),
-      ],
+    return RideHistoryWithAI(
+      rides: _convertToRideMetrics(),
+      onRideTap: (ride) {
+        // Future: navigate to detailed ride analysis
+        print('Ride tapped: ${ride.distance}km');
+      },
     );
+  }
+
+  Widget _buildAIChatTab() {
+    return AIChatWidget(
+      rideHistory: _convertToRideMetrics(),
+    );
+  }
+
+  Future<WeeklyAnalysis> _getWeeklyAnalysis() async {
+    final service = AIAnalysisService();
+    return service.generateWeeklyAnalysis(_convertToRideMetrics());
   }
 
   Widget _buildFriendsTab() {
@@ -397,47 +462,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildRideCard(RideHistory ride) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                ride.name,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 5),
-              Text(
-                '${ride.distance.toStringAsFixed(1)} km • ${ride.duration} min',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
-          ),
-          Text(
-            '${(ride.distance * 10).toInt()} pts',
-            style: TextStyle(
-              color: Color(0xFFFF6B35),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFriendCard(String name) {
     return Container(
@@ -576,6 +600,9 @@ class _RideScreenState extends State<RideScreen> {
   int duration = 0;
   Timer? timer;
   bool isWarning = false;
+  int overspeeds = 0;
+  List<double> speedPattern = [];
+  double maxSpeed = 0;
 
   @override
   void initState() {
@@ -592,10 +619,52 @@ class _RideScreenState extends State<RideScreen> {
         if (currentSpeed < 0) currentSpeed = 0;
         distance += currentSpeed / 3600;
 
+        // Track speed pattern and max speed
+        speedPattern.add(currentSpeed);
+        if (currentSpeed > maxSpeed) maxSpeed = currentSpeed;
+
         // Check speed warning
-        isWarning = currentSpeed > speedLimit;
+        if (currentSpeed > speedLimit) {
+          if (!isWarning) {
+            overspeeds++;
+          }
+          isWarning = true;
+        } else {
+          isWarning = false;
+        }
       });
     });
+  }
+
+  Future<void> _endRide() async {
+    timer?.cancel();
+    
+    // Create ride metrics
+    final metrics = RideMetrics(
+      distance: distance,
+      duration: duration,
+      avgSpeed: distance > 0 ? (distance / (duration / 3600)) : 0,
+      overspeeds: overspeeds,
+      maxSpeed: maxSpeed,
+      speedPattern: speedPattern,
+      timestamp: DateTime.now(),
+    );
+
+    // Generate AI analysis
+    final service = AIAnalysisService();
+    final analysis = await service.analyzeRide(metrics);
+
+    // Navigate to analysis screen
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RideAnalysisScreen(
+          metrics: metrics,
+          analysis: analysis,
+        ),
+      ),
+    );
   }
 
   void _addMemory() {
@@ -865,13 +934,7 @@ class _RideScreenState extends State<RideScreen> {
 
                   // End Ride Button
                   GestureDetector(
-                    onTap: () {
-                      timer?.cancel();
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('✅ Ride Saved! +${(distance * 10).toStringAsFixed(0)} points')),
-                      );
-                    },
+                    onTap: _endRide,
                     child: Container(
                       width: 60,
                       height: 60,
@@ -911,3 +974,98 @@ class Memory {
 
   Memory(this.name, this.lat, this.lon, this.note, this.privacy, this.likes);
 }
+
+// Ride Analysis Screen - shows AI analysis after ride completion
+class RideAnalysisScreen extends StatelessWidget {
+  final RideMetrics metrics;
+  final dynamic analysis; // AIAnalysis
+
+  const RideAnalysisScreen({
+    Key? key,
+    required this.metrics,
+    required this.analysis,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final points = (metrics.distance * 10).toInt();
+    
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Ride Complete! 🎉',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFFF6B35),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '+$points pts',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // AI Analysis
+            Expanded(
+              child: AIAnalysisDisplay(analysis: analysis),
+            ),
+
+            // Action Buttons
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF0066FF),
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Back to Home',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
