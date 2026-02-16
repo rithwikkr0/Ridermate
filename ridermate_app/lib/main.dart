@@ -733,10 +733,12 @@ class _RideScreenState extends State<RideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        timer?.cancel();
-        return true;
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          timer?.cancel();
+        }
       },
       child: Scaffold(
         body: Stack(
