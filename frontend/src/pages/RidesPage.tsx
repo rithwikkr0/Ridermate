@@ -1,0 +1,10 @@
+export const RidesPage = () => {
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-6">My Rides</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <p className="text-gray-600">Your rides will appear here once you start tracking them.</p>
+      </div>
+    </div>
+  );
+};
