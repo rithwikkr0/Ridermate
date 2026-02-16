@@ -5,7 +5,7 @@ import { AppError } from '../types/api.types';
 
 export interface AuthRequest extends Request {
   userId?: string;
-  user?: any;
+  user?: { userId: string; [key: string]: any };
 }
 
 export const authenticate = (

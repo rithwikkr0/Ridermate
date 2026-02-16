@@ -146,7 +146,7 @@ export const calculateSafetyScore = (ride: Ride): number => {
   let score = 100;
 
   // Penalize very high speeds
-  if (ride.stats.maxSpeed > 15) { // > 54 km/h
+  if (ride.stats.maxSpeed > 15) { // >= 54 km/h
     score -= 10;
   }
 
