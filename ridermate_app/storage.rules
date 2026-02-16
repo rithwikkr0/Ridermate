@@ -1,0 +1,58 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB
+    }
+    
+    // Profile photos
+    match /profile_photos/{userId}.{extension} {
+      // Anyone can read profile photos
+      allow read: if true;
+      
+      // Only owner can upload/update their profile photo
+      allow write: if isOwner(userId) && isImage() && isValidSize();
+      
+      // Only owner can delete their profile photo
+      allow delete: if isOwner(userId);
+    }
+    
+    // Memory photos
+    match /memory_photos/{userId}/{memoryId}.{extension} {
+      // Anyone can read public memory photos (you would need to check privacy in real app)
+      allow read: if true;
+      
+      // Only owner can upload memory photos
+      allow write: if isOwner(userId) && isImage() && isValidSize();
+      
+      // Only owner can delete memory photos
+      allow delete: if isOwner(userId);
+    }
+    
+    // Ride photos
+    match /ride_photos/{userId}/{rideId}.{extension} {
+      // Only authenticated users can read ride photos
+      allow read: if isAuthenticated();
+      
+      // Only owner can upload ride photos
+      allow write: if isOwner(userId) && isImage() && isValidSize();
+      
+      // Only owner can delete ride photos
+      allow delete: if isOwner(userId);
+    }
+  }
+}
