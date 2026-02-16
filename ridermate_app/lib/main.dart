@@ -1,23 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:math';
 
-void main() {
+import 'services/auth_provider.dart';
+import 'guards/auth_guard.dart';
+import 'screens/user_profile_page.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print('Firebase initialization error: $e');
+  }
+  
   runApp(RiderMateApp());
 }
 
 class RiderMateApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'RiderMate',
-      theme: ThemeData(
-        useMaterial3: true,
-        primaryColor: Color(0xFF0066FF),
-        scaffoldBackgroundColor: Colors.black,
-        fontFamily: 'Segoe UI',
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: MaterialApp(
+        title: 'RiderMate',
+        theme: ThemeData(
+          useMaterial3: true,
+          primaryColor: Color(0xFF0066FF),
+          scaffoldBackgroundColor: Colors.black,
+          fontFamily: 'Segoe UI',
+        ),
+        home: AuthWrapper(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: HomeScreen(),
     );
   }
 }
@@ -75,20 +96,46 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFF6B35),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: Text(
-                      '$points pts',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFF6B35),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Text(
+                          '$points pts',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => UserProfilePage()),
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Color(0xFF0066FF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

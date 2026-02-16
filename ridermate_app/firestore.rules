@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserPrivacy(userId) {
+      return get(/databases/$(database)/documents/user_privacy/$(userId)).data;
+    }
+    
+    function isPublicProfile(userId) {
+      let privacy = getUserPrivacy(userId);
+      return privacy.profileVisibility == 'public';
+    }
+    
+    function isFriend(userId) {
+      // This is a simplified check - you would need to implement friendship checking
+      // based on your friends collection structure
+      return true; // Placeholder
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone can read public profiles
+      // Only owner can read their own profile fully
+      allow read: if isOwner(userId) || isPublicProfile(userId);
+      
+      // Only owner can create/update their own profile
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      
+      // Only owner can delete their own profile
+      allow delete: if isOwner(userId);
+    }
+    
+    // User settings collection
+    match /user_settings/{userId} {
+      // Only owner can read/write their settings
+      allow read, write: if isOwner(userId);
+    }
+    
+    // User privacy settings collection
+    match /user_privacy/{userId} {
+      // Only owner can read/write their privacy settings
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Memories collection (if you have one)
+    match /memories/{memoryId} {
+      allow read: if isAuthenticated() && (
+        resource.data.privacy == 'public' ||
+        resource.data.userId == request.auth.uid ||
+        (resource.data.privacy == 'friends' && isFriend(resource.data.userId))
+      );
+      
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Rides collection (if you have one)
+    match /rides/{rideId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Friends/friendships collection (if you have one)
+    match /friendships/{friendshipId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId1 == request.auth.uid ||
+        resource.data.userId2 == request.auth.uid
+      );
+      
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId1 == request.auth.uid ||
+        request.resource.data.userId2 == request.auth.uid
+      );
+      
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId1 == request.auth.uid ||
+        resource.data.userId2 == request.auth.uid
+      );
+    }
+  }
+}
