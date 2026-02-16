@@ -88,7 +88,8 @@ router.post('/:rideId/end', authenticate, async (req, res) => {
     }
 
     const endTime = new Date();
-    const duration = (endTime.getTime() - rideData.startTime.getTime()) / 1000; // seconds
+    const startTime = rideData.startTime instanceof Date ? rideData.startTime : (rideData.startTime as any).toDate();
+    const duration = (endTime.getTime() - startTime.getTime()) / 1000; // seconds
 
     await db.collection('rides').doc(rideId).update({
       endTime,

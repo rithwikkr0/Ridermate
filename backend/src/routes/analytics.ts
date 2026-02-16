@@ -61,8 +61,12 @@ router.get('/trends', authenticate, async (req, res) => {
     const weeklyData: { [key: string]: any } = {};
     
     rides.forEach(ride => {
-      const date = new Date(ride.createdAt);
-      const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
+      const date = ride.createdAt.toDate ? ride.createdAt.toDate() : new Date(ride.createdAt);
+      // Calculate ISO week number
+      const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+      const daysSinceFirstDay = Math.floor((date.getTime() - firstDayOfYear.getTime()) / (24 * 60 * 60 * 1000));
+      const weekNumber = Math.ceil((daysSinceFirstDay + firstDayOfYear.getDay() + 1) / 7);
+      const weekKey = `${date.getFullYear()}-W${weekNumber}`;
       
       if (!weeklyData[weekKey]) {
         weeklyData[weekKey] = {
