@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import { sendFriendRequest, getFriends } from '../controllers/friends.controller';
+import { apiLimiter } from '../middleware/rate-limit.middleware';
 
 const router = Router();
 
@@ -9,13 +10,13 @@ const router = Router();
  * @desc    Send a friend request
  * @access  Private
  */
-router.post('/request', authenticate, sendFriendRequest);
+router.post('/request', apiLimiter, authenticate, sendFriendRequest);
 
 /**
  * @route   GET /api/friends/:userId
  * @desc    Get friends for a user
  * @access  Private
  */
-router.get('/:userId', authenticate, getFriends);
+router.get('/:userId', apiLimiter, authenticate, getFriends);
 
 export default router;
