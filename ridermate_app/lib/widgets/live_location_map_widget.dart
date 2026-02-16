@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/live_location.dart';
 import '../services/location_service.dart';
 
@@ -20,6 +21,9 @@ class LiveLocationMapWidget extends StatefulWidget {
 class _LiveLocationMapWidgetState extends State<LiveLocationMapWidget> {
   Map<String, LiveLocation> _friendLocations = {};
   LiveLocation? _myLocation;
+  
+  StreamSubscription<Map<String, LiveLocation>>? _locationsSubscription;
+  StreamSubscription<LiveLocation?>? _myLocationSubscription;
 
   @override
   void initState() {
@@ -27,7 +31,7 @@ class _LiveLocationMapWidgetState extends State<LiveLocationMapWidget> {
     _loadLocations();
 
     // Listen to location updates
-    widget.locationService.locationsStream.listen((locations) {
+    _locationsSubscription = widget.locationService.locationsStream.listen((locations) {
       if (mounted) {
         setState(() {
           _friendLocations = locations;
@@ -35,13 +39,20 @@ class _LiveLocationMapWidgetState extends State<LiveLocationMapWidget> {
       }
     });
 
-    widget.locationService.myLocationStream.listen((location) {
+    _myLocationSubscription = widget.locationService.myLocationStream.listen((location) {
       if (mounted) {
         setState(() {
           _myLocation = location;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _locationsSubscription?.cancel();
+    _myLocationSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadLocations() async {

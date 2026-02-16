@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../models/friend.dart';
 import '../services/friend_service.dart';
 import '../widgets/friend_search_widget.dart';
 import '../widgets/friends_list_widget.dart';

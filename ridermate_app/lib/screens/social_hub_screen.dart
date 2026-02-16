@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../models/friend.dart';
 import '../services/friend_service.dart';
 import '../services/ride_room_service.dart';
 import '../services/location_service.dart';
