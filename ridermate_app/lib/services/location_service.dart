@@ -247,13 +247,16 @@ class LocationService {
   ) {
     const double earthRadius = 6371; // km
     
+    // Convert all coordinates to radians once
+    final lat1Rad = _degreesToRadians(lat1);
+    final lat2Rad = _degreesToRadians(lat2);
     final dLat = _degreesToRadians(lat2 - lat1);
     final dLon = _degreesToRadians(lon2 - lon1);
     
     final sinHalfDLat = sin(dLat / 2);
     final sinHalfDLon = sin(dLon / 2);
-    final cosLat1 = cos(_degreesToRadians(lat1));
-    final cosLat2 = cos(_degreesToRadians(lat2));
+    final cosLat1 = cos(lat1Rad);
+    final cosLat2 = cos(lat2Rad);
     
     final a = sinHalfDLat * sinHalfDLat +
         cosLat1 * cosLat2 * sinHalfDLon * sinHalfDLon;
