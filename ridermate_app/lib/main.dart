@@ -17,7 +17,7 @@ Future<void> main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     // If .env file doesn't exist, continue with defaults
-    print('Warning: .env file not found, using defaults');
+    debugPrint('Warning: .env file not found, using defaults');
   }
   
   runApp(RiderMateApp());
@@ -355,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
       rides: _convertToRideMetrics(),
       onRideTap: (ride) {
         // Future: navigate to detailed ride analysis
-        print('Ride tapped: ${ride.distance}km');
+        debugPrint('Ride tapped: ${ride.distance}km');
       },
     );
   }

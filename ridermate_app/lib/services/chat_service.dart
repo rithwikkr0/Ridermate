@@ -16,6 +16,10 @@ class ChatService {
   final List<ChatMessage> _messages = [];
   static const String _storageKey = 'chat_messages';
   static const int _maxMessages = 50;
+  
+  // Configuration constants
+  static const Duration _contextWindowDuration = Duration(hours: 1);
+  static const int _maxContextMessages = 10;
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
 
@@ -75,8 +79,8 @@ class ChatService {
       
       // Build conversation history for context
       final conversationHistory = _messages
-          .where((m) => m.timestamp.isAfter(DateTime.now().subtract(Duration(hours: 1))))
-          .take(10)
+          .where((m) => m.timestamp.isAfter(DateTime.now().subtract(_contextWindowDuration)))
+          .take(_maxContextMessages)
           .map((m) => {
                 'role': m.role,
                 'content': m.content,

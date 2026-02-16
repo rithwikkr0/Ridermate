@@ -9,9 +9,15 @@ class OpenAIService {
 
   final String _baseUrl = 'https://api.openai.com/v1';
   final Duration _timeout = Duration(seconds: 30);
+  
+  // Configuration constants
+  static const String _testKeyPlaceholder = 'sk-test-key-placeholder';
+  static const bool _enableDemoMode = true;
 
   String get _apiKey => dotenv.env['OPENAI_API_KEY'] ?? '';
   String get _model => dotenv.env['OPENAI_MODEL'] ?? 'gpt-3.5-turbo';
+  
+  bool get _isDemoMode => _enableDemoMode && (_apiKey.isEmpty || _apiKey == _testKeyPlaceholder);
 
   Future<String> chat({
     required String systemPrompt,
@@ -19,7 +25,7 @@ class OpenAIService {
     List<Map<String, String>>? conversationHistory,
   }) async {
     try {
-      if (_apiKey.isEmpty || _apiKey == 'sk-test-key-placeholder') {
+      if (_isDemoMode) {
         // Return a mock response for demo purposes
         return _getMockResponse(userMessage);
       }
