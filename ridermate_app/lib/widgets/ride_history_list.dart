@@ -9,7 +9,7 @@ import 'ride_filter_widget.dart';
 class RideHistoryList extends StatefulWidget {
   final String userId;
 
-  const RideHistoryList({Key? key, required this.userId}) : super(key: key);
+  const RideHistoryList({super.key, required this.userId});
 
   @override
   _RideHistoryListState createState() => _RideHistoryListState();

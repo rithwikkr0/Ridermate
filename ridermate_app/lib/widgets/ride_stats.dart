@@ -4,7 +4,7 @@ import '../models/ride_stats.dart';
 class RideStatsWidget extends StatelessWidget {
   final RideStats stats;
 
-  const RideStatsWidget({Key? key, required this.stats}) : super(key: key);
+  const RideStatsWidget({super.key, required this.stats});
 
   @override
   Widget build(BuildContext context) {

@@ -6,10 +6,10 @@ class RideFilterWidget extends StatefulWidget {
   final Function(RideFilter) onApply;
 
   const RideFilterWidget({
-    Key? key,
+    super.key,
     required this.currentFilter,
     required this.onApply,
-  }) : super(key: key);
+  });
 
   @override
   _RideFilterWidgetState createState() => _RideFilterWidgetState();

@@ -9,7 +9,7 @@ import '../services/data_export_service.dart';
 class RideAnalyticsPage extends StatefulWidget {
   final String userId;
 
-  const RideAnalyticsPage({Key? key, required this.userId}) : super(key: key);
+  const RideAnalyticsPage({super.key, required this.userId});
 
   @override
   _RideAnalyticsPageState createState() => _RideAnalyticsPageState();

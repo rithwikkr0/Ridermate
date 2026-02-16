@@ -8,10 +8,10 @@ class RideComparison extends StatelessWidget {
   final Ride ride2;
 
   const RideComparison({
-    Key? key,
+    super.key,
     required this.ride1,
     required this.ride2,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

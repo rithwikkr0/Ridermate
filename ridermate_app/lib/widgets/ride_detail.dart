@@ -5,7 +5,7 @@ import '../models/ride.dart';
 class RideDetail extends StatelessWidget {
   final Ride ride;
 
-  const RideDetail({Key? key, required this.ride}) : super(key: key);
+  const RideDetail({super.key, required this.ride});
 
   @override
   Widget build(BuildContext context) {
