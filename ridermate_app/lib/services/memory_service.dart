@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/memory.dart';
 import 'photo_upload_service.dart';
 
@@ -177,7 +178,7 @@ class MemoryService {
         'viewCount': FieldValue.increment(1),
       });
     } catch (e) {
-      print('Failed to record view: $e');
+      debugPrint('Failed to record view: $e');
     }
   }
 

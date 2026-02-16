@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -40,7 +41,7 @@ class ImageCompressionService {
       if (result == null) return null;
       return File(result.path);
     } catch (e) {
-      print('Error compressing image: $e');
+      debugPrint('Error compressing image: $e');
       return null;
     }
   }
@@ -63,7 +64,7 @@ class ImageCompressionService {
       if (result == null) return null;
       return File(result.path);
     } catch (e) {
-      print('Error generating thumbnail: $e');
+      debugPrint('Error generating thumbnail: $e');
       return null;
     }
   }
@@ -78,7 +79,7 @@ class ImageCompressionService {
         format: CompressFormat.jpeg,
       );
     } catch (e) {
-      print('Error compressing to bytes: $e');
+      debugPrint('Error compressing to bytes: $e');
       return null;
     }
   }

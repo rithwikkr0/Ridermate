@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/image_compression.dart';
 
@@ -78,7 +79,7 @@ class PhotoUploadService {
         await thumbRef.delete();
       }
     } catch (e) {
-      print('Error deleting photo: $e');
+      debugPrint('Error deleting photo: $e');
       // Don't throw, just log the error
     }
   }
