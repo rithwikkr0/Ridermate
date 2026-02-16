@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:firebase_core/firebase_core.dart';
+import 'screens/memory_gallery_screen.dart';
+import 'screens/add_memory_screen.dart';
+import 'screens/memory_map_screen.dart';
+import 'screens/memory_feed_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase when ready
+  // await Firebase.initializeApp();
   runApp(RiderMateApp());
 }
 
@@ -33,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
   int referralCount = 12;
   bool isRiding = false;
   int selectedTab = 0;
+  
+  // Mock user ID for demo
+  final String currentUserId = 'user123';
+  final List<String> friendIds = ['friend1', 'friend2', 'friend3'];
 
   List<RideHistory> rideHistory = [
     RideHistory('Route 1', 25.3, 45, DateTime.now().subtract(Duration(days: 1))),
@@ -50,7 +62,52 @@ class _HomeScreenState extends State<HomeScreen> {
   void startRide() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => RideScreen()),
+      MaterialPageRoute(builder: (context) => RideScreen(userId: currentUserId)),
+    );
+  }
+
+  void navigateToMemoryGallery() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryGalleryScreen(
+          userId: currentUserId,
+          currentUserId: currentUserId,
+        ),
+      ),
+    );
+  }
+
+  void navigateToAddMemory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMemoryScreen(userId: currentUserId),
+      ),
+    );
+  }
+
+  void navigateToMemoryMap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryMapScreen(
+          userId: currentUserId,
+          currentUserId: currentUserId,
+        ),
+      ),
+    );
+  }
+
+  void navigateToMemoryFeed() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryFeedScreen(
+          currentUserId: currentUserId,
+          friendIds: friendIds,
+        ),
+      ),
     );
   }
 
@@ -365,6 +422,73 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+
+        // Action buttons
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: navigateToMemoryGallery,
+                  icon: Icon(Icons.photo_library),
+                  label: Text('Gallery'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF0066FF),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: navigateToMemoryMap,
+                  icon: Icon(Icons.map),
+                  label: Text('Map'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4CAF50),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 15),
+
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: navigateToAddMemory,
+                  icon: Icon(Icons.add_a_photo),
+                  label: Text('Add Memory'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFFF6B35),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: navigateToMemoryFeed,
+                  icon: Icon(Icons.people),
+                  label: Text('Feed'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF9C27B0),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+
+        // Preview of recent memories
         ...memories.map((memory) => _buildMemoryCard(memory)).toList(),
       ],
     );
@@ -565,6 +689,10 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class RideScreen extends StatefulWidget {
+  final String userId;
+
+  const RideScreen({Key? key, required this.userId}) : super(key: key);
+
   @override
   _RideScreenState createState() => _RideScreenState();
 }
@@ -599,52 +727,13 @@ class _RideScreenState extends State<RideScreen> {
   }
 
   void _addMemory() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: Text(
-          'Add Memory',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Memory description',
-                hintStyle: TextStyle(color: Colors.grey),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4CAF50),
-                    ),
-                    child: Text('📸 Photo'),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF0066FF),
-                    ),
-                    child: Text('Save'),
-                  ),
-                ),
-              ],
-            ),
-          ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddMemoryScreen(
+          userId: widget.userId,
+          initialLat: 12.97,
+          initialLon: 77.59,
         ),
       ),
     );
