@@ -152,6 +152,12 @@ class StreakComponent extends StatelessWidget {
   }
 
   Widget _buildStreakCalendar() {
+    // Note: This is a simplified visualization
+    // In a real implementation, you would fetch actual ride dates
+    // and map them to the correct days of the week
+    final today = DateTime.now();
+    final List<String> dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -166,7 +172,12 @@ class StreakComponent extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: List.generate(7, (index) {
-            final hasRide = index < currentStreak;
+            // This is a simplified visualization
+            // In production, map actual ride dates to calendar days
+            // For now, we assume the streak fills days backwards from today
+            final dayIndex = (today.weekday - 1 + index) % 7;
+            final hasRide = currentStreak > 0 && index >= (7 - currentStreak);
+            
             return Column(
               children: [
                 Container(
@@ -190,7 +201,7 @@ class StreakComponent extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index],
+                  dayLabels[dayIndex],
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 10,

@@ -1,7 +1,7 @@
 const cron = require('node-cron');
-const pointsService = require('./services/PointsService');
-const leaderboardService = require('./services/LeaderboardService');
-const { LEADERBOARD_PERIODS } = require('./config/constants');
+const pointsService = require('../services/PointsService');
+const leaderboardService = require('../services/LeaderboardService');
+const { LEADERBOARD_PERIODS } = require('../config/constants');
 
 // Reset daily points at midnight every day
 cron.schedule('0 0 * * *', async () => {

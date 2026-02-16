@@ -5,10 +5,11 @@ import '../models/badge.dart';
 import '../models/achievement.dart';
 import '../models/points.dart';
 import '../models/streak.dart';
+import 'api_config.dart';
 
 class GamificationApiService {
-  // Update this with your backend URL
-  static const String baseUrl = 'http://localhost:3000/api';
+  // Get base URL from config
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // Leaderboard endpoints
   static Future<List<LeaderboardEntry>> getGlobalLeaderboard({

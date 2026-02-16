@@ -167,9 +167,13 @@ class AchievementService {
       case ACHIEVEMENT_TYPES.TIME_BASED:
         if (achievement.id.startsWith('streak_')) {
           const days = parseInt(achievement.id.split('_')[1]);
-          return (userStats.currentStreak || 0) >= days;
+          const current = userStats.currentStreak || 0;
+          return Math.min(100, (current / days) * 100);
         }
         if (achievement.id === 'one_year_member') {
+          if (!userStats.accountCreatedAt) {
+            return 0;
+          }
           const accountAge = Date.now() - new Date(userStats.accountCreatedAt).getTime();
           const oneYear = 365 * 24 * 60 * 60 * 1000;
           return accountAge >= oneYear;
@@ -246,6 +250,9 @@ class AchievementService {
           return Math.min(100, (current / days) * 100);
         }
         if (achievement.id === 'one_year_member') {
+          if (!userStats.accountCreatedAt) {
+            return 0;
+          }
           const accountAge = Date.now() - new Date(userStats.accountCreatedAt).getTime();
           const oneYear = 365 * 24 * 60 * 60 * 1000;
           return Math.min(100, (accountAge / oneYear) * 100);
