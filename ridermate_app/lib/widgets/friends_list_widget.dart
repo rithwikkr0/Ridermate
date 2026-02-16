@@ -21,6 +21,7 @@ class _FriendsListWidgetState extends State<FriendsListWidget> {
   List<Friend> _friends = [];
   bool _isLoading = true;
   String? _errorMessage;
+  StreamSubscription<List<Friend>>? _friendsSubscription;
 
   @override
   void initState() {
@@ -28,13 +29,19 @@ class _FriendsListWidgetState extends State<FriendsListWidget> {
     _loadFriends();
     
     // Listen to friend updates
-    widget.friendService.friendsStream.listen((friends) {
+    _friendsSubscription = widget.friendService.friendsStream.listen((friends) {
       if (mounted) {
         setState(() {
           _friends = friends;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _friendsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadFriends() async {

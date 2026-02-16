@@ -27,6 +27,10 @@ class _RideRoomWidgetState extends State<RideRoomWidget> {
   final TextEditingController _chatController = TextEditingController();
   List<ChatMessage> _messages = [];
   bool _showChat = false;
+  
+  // Stream subscriptions
+  StreamSubscription<RideRoom?>? _roomSubscription;
+  StreamSubscription<List<ChatMessage>>? _messagesSubscription;
 
   @override
   void initState() {
@@ -35,7 +39,7 @@ class _RideRoomWidgetState extends State<RideRoomWidget> {
     _loadMessages();
     
     // Listen to room updates
-    widget.roomService.activeRoomStream.listen((room) {
+    _roomSubscription = widget.roomService.activeRoomStream.listen((room) {
       if (room != null && room.id == _room.id && mounted) {
         setState(() {
           _room = room;
@@ -44,7 +48,7 @@ class _RideRoomWidgetState extends State<RideRoomWidget> {
     });
     
     // Listen to messages
-    widget.roomService.messagesStream.listen((messages) {
+    _messagesSubscription = widget.roomService.messagesStream.listen((messages) {
       if (mounted) {
         setState(() {
           _messages = messages;
@@ -56,6 +60,8 @@ class _RideRoomWidgetState extends State<RideRoomWidget> {
   @override
   void dispose() {
     _chatController.dispose();
+    _roomSubscription?.cancel();
+    _messagesSubscription?.cancel();
     super.dispose();
   }
 

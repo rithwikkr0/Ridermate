@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/friend_service.dart';
 import '../widgets/friend_search_widget.dart';
 import '../widgets/friends_list_widget.dart';
@@ -23,6 +24,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _requestCount = 0;
+  StreamSubscription<List<FriendRequest>>? _requestsSubscription;
 
   @override
   void initState() {
@@ -31,7 +33,7 @@ class _FriendsScreenState extends State<FriendsScreen>
     _updateRequestCount();
 
     // Listen to request updates
-    widget.friendService.requestsStream.listen((requests) {
+    _requestsSubscription = widget.friendService.requestsStream.listen((requests) {
       if (mounted) {
         setState(() {
           _requestCount = requests
@@ -45,6 +47,7 @@ class _FriendsScreenState extends State<FriendsScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _requestsSubscription?.cancel();
     super.dispose();
   }
 

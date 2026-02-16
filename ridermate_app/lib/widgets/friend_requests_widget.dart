@@ -22,6 +22,7 @@ class _FriendRequestsWidgetState extends State<FriendRequestsWidget> {
   bool _isLoading = true;
   String? _errorMessage;
   final Set<String> _processingIds = {};
+  StreamSubscription<List<FriendRequest>>? _requestsSubscription;
 
   @override
   void initState() {
@@ -29,7 +30,7 @@ class _FriendRequestsWidgetState extends State<FriendRequestsWidget> {
     _loadRequests();
     
     // Listen to request updates
-    widget.friendService.requestsStream.listen((requests) {
+    _requestsSubscription = widget.friendService.requestsStream.listen((requests) {
       if (mounted) {
         setState(() {
           _requests = requests.where((r) => 
@@ -39,6 +40,12 @@ class _FriendRequestsWidgetState extends State<FriendRequestsWidget> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _requestsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadRequests() async {
@@ -351,13 +358,14 @@ class FriendRequestBadge extends StatefulWidget {
 
 class _FriendRequestBadgeState extends State<FriendRequestBadge> {
   int _requestCount = 0;
+  StreamSubscription<List<FriendRequest>>? _requestsSubscription;
 
   @override
   void initState() {
     super.initState();
     _updateCount();
     
-    widget.friendService.requestsStream.listen((requests) {
+    _requestsSubscription = widget.friendService.requestsStream.listen((requests) {
       if (mounted) {
         setState(() {
           _requestCount = requests.where((r) => 
@@ -367,6 +375,12 @@ class _FriendRequestBadgeState extends State<FriendRequestBadge> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _requestsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _updateCount() async {

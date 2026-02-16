@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/friend_service.dart';
 import '../services/ride_room_service.dart';
 import '../services/location_service.dart';
@@ -32,13 +33,14 @@ class SocialHubScreen extends StatefulWidget {
 
 class _SocialHubScreenState extends State<SocialHubScreen> {
   int _requestCount = 0;
+  StreamSubscription<List<FriendRequest>>? _requestsSubscription;
 
   @override
   void initState() {
     super.initState();
     _updateRequestCount();
 
-    widget.friendService.requestsStream.listen((requests) {
+    _requestsSubscription = widget.friendService.requestsStream.listen((requests) {
       if (mounted) {
         setState(() {
           _requestCount = requests
@@ -47,6 +49,12 @@ class _SocialHubScreenState extends State<SocialHubScreen> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _requestsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _updateRequestCount() async {

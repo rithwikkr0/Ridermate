@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/ride_room.dart';
 import '../services/ride_room_service.dart';
 import '../widgets/create_ride_room_widget.dart';
@@ -26,6 +27,9 @@ class _RideRoomsScreenState extends State<RideRoomsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   RideRoom? _activeRoom;
+  
+  StreamSubscription<List<RideRoom>>? _roomsSubscription;
+  StreamSubscription<RideRoom?>? _activeRoomSubscription;
 
   @override
   void initState() {
@@ -33,7 +37,7 @@ class _RideRoomsScreenState extends State<RideRoomsScreen> {
     _loadRooms();
 
     // Listen to room updates
-    widget.roomService.roomsStream.listen((rooms) {
+    _roomsSubscription = widget.roomService.roomsStream.listen((rooms) {
       if (mounted) {
         setState(() {
           _rooms = rooms;
@@ -41,13 +45,20 @@ class _RideRoomsScreenState extends State<RideRoomsScreen> {
       }
     });
 
-    widget.roomService.activeRoomStream.listen((room) {
+    _activeRoomSubscription = widget.roomService.activeRoomStream.listen((room) {
       if (mounted) {
         setState(() {
           _activeRoom = room;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _roomsSubscription?.cancel();
+    _activeRoomSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadRooms() async {

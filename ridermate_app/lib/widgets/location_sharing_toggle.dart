@@ -22,6 +22,7 @@ class LocationSharingToggle extends StatefulWidget {
 class _LocationSharingToggleState extends State<LocationSharingToggle> {
   bool _isSharing = false;
   LocationSharingSettings _settings = LocationSharingSettings();
+  StreamSubscription<LocationSharingSettings>? _settingsSubscription;
 
   @override
   void initState() {
@@ -30,7 +31,7 @@ class _LocationSharingToggleState extends State<LocationSharingToggle> {
     _isSharing = _settings.enabled;
 
     // Listen to settings updates
-    widget.locationService.settingsStream.listen((settings) {
+    _settingsSubscription = widget.locationService.settingsStream.listen((settings) {
       if (mounted) {
         setState(() {
           _settings = settings;
@@ -38,6 +39,12 @@ class _LocationSharingToggleState extends State<LocationSharingToggle> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _settingsSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _toggleSharing(bool value) async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import '../models/live_location.dart';
 
 /// Service for tracking and sharing live locations
@@ -258,7 +259,7 @@ class LocationService {
   }
   
   double _degreesToRadians(double degrees) {
-    return degrees * (3.14159265359 / 180);
+    return degrees * (pi / 180);
   }
   
   /// Get my current location
