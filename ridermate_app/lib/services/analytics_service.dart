@@ -172,36 +172,40 @@ class AnalyticsService {
   }
 
   Map<String, dynamic> compareRides(Ride ride1, Ride ride2) {
+    double _safePercent(double delta, double base) {
+      return base != 0 ? (delta / base) * 100 : 0;
+    }
+
     return {
       'distance': {
         'ride1': ride1.distance,
         'ride2': ride2.distance,
         'delta': ride1.distance - ride2.distance,
-        'deltaPercent': ((ride1.distance - ride2.distance) / ride2.distance) * 100,
+        'deltaPercent': _safePercent(ride1.distance - ride2.distance, ride2.distance),
       },
       'duration': {
         'ride1': ride1.duration,
         'ride2': ride2.duration,
         'delta': ride1.duration - ride2.duration,
-        'deltaPercent': ((ride1.duration - ride2.duration) / ride2.duration) * 100,
+        'deltaPercent': _safePercent(ride1.duration - ride2.duration, ride2.duration.toDouble()),
       },
       'avgSpeed': {
         'ride1': ride1.avgSpeed,
         'ride2': ride2.avgSpeed,
         'delta': ride1.avgSpeed - ride2.avgSpeed,
-        'deltaPercent': ((ride1.avgSpeed - ride2.avgSpeed) / ride2.avgSpeed) * 100,
+        'deltaPercent': _safePercent(ride1.avgSpeed - ride2.avgSpeed, ride2.avgSpeed),
       },
       'maxSpeed': {
         'ride1': ride1.maxSpeed,
         'ride2': ride2.maxSpeed,
         'delta': ride1.maxSpeed - ride2.maxSpeed,
-        'deltaPercent': ((ride1.maxSpeed - ride2.maxSpeed) / ride2.maxSpeed) * 100,
+        'deltaPercent': _safePercent(ride1.maxSpeed - ride2.maxSpeed, ride2.maxSpeed),
       },
       'safetyScore': {
         'ride1': ride1.safetyScore,
         'ride2': ride2.safetyScore,
         'delta': ride1.safetyScore - ride2.safetyScore,
-        'deltaPercent': ((ride1.safetyScore - ride2.safetyScore) / ride2.safetyScore) * 100,
+        'deltaPercent': _safePercent(ride1.safetyScore - ride2.safetyScore, ride2.safetyScore),
       },
     };
   }

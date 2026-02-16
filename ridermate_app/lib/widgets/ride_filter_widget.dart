@@ -24,6 +24,11 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
   late double? _maxSafetyScore;
   late String? _timeOfDay;
   late String? _terrain;
+  
+  final TextEditingController _minDistanceController = TextEditingController();
+  final TextEditingController _maxDistanceController = TextEditingController();
+  final TextEditingController _minSafetyController = TextEditingController();
+  final TextEditingController _maxSafetyController = TextEditingController();
 
   @override
   void initState() {
@@ -36,6 +41,21 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
     _maxSafetyScore = widget.currentFilter.maxSafetyScore;
     _timeOfDay = widget.currentFilter.timeOfDay;
     _terrain = widget.currentFilter.terrain;
+    
+    // Initialize controllers with current values
+    _minDistanceController.text = _minDistance?.toString() ?? '';
+    _maxDistanceController.text = _maxDistance?.toString() ?? '';
+    _minSafetyController.text = _minSafetyScore?.toString() ?? '';
+    _maxSafetyController.text = _maxSafetyScore?.toString() ?? '';
+  }
+
+  @override
+  void dispose() {
+    _minDistanceController.dispose();
+    _maxDistanceController.dispose();
+    _minSafetyController.dispose();
+    _maxSafetyController.dispose();
+    super.dispose();
   }
 
   @override
@@ -99,7 +119,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
                     Expanded(
                       child: _buildNumberField(
                         'Min',
-                        _minDistance,
+                        _minDistanceController,
                         (value) => setState(() => _minDistance = value),
                       ),
                     ),
@@ -107,7 +127,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
                     Expanded(
                       child: _buildNumberField(
                         'Max',
-                        _maxDistance,
+                        _maxDistanceController,
                         (value) => setState(() => _maxDistance = value),
                       ),
                     ),
@@ -120,7 +140,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
                     Expanded(
                       child: _buildNumberField(
                         'Min',
-                        _minSafetyScore,
+                        _minSafetyController,
                         (value) => setState(() => _minSafetyScore = value),
                       ),
                     ),
@@ -128,7 +148,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
                     Expanded(
                       child: _buildNumberField(
                         'Max',
-                        _maxSafetyScore,
+                        _maxSafetyController,
                         (value) => setState(() => _maxSafetyScore = value),
                       ),
                     ),
@@ -228,7 +248,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
   }
 
   Widget _buildNumberField(
-      String label, double? value, Function(double?) onChanged) {
+      String label, TextEditingController controller, Function(double?) onChanged) {
     return TextField(
       style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
@@ -246,9 +266,7 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
         ),
       ),
       keyboardType: TextInputType.number,
-      controller: TextEditingController(
-        text: value != null ? value.toString() : '',
-      ),
+      controller: controller,
       onChanged: (text) {
         onChanged(text.isEmpty ? null : double.tryParse(text));
       },
@@ -316,6 +334,10 @@ class _RideFilterWidgetState extends State<RideFilterWidget> {
       _timeOfDay = null;
       _terrain = null;
     });
+    _minDistanceController.clear();
+    _maxDistanceController.clear();
+    _minSafetyController.clear();
+    _maxSafetyController.clear();
     widget.onApply(RideFilter());
     Navigator.pop(context);
   }
