@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'widgets/ride_history_list.dart';
+import 'pages/ride_analytics_page.dart';
+import 'widgets/ride_stats.dart';
+import 'models/ride_stats.dart';
+import 'services/ride_history_service.dart';
 
 void main() {
   runApp(RiderMateApp());
@@ -97,16 +102,23 @@ class _HomeScreenState extends State<HomeScreen> {
             // Tab Navigation
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _buildTab('Today', 0),
-                  SizedBox(width: 10),
-                  _buildTab('History', 1),
-                  SizedBox(width: 10),
-                  _buildTab('Friends', 2),
-                  SizedBox(width: 10),
-                  _buildTab('Memories', 3),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab('Today', 0),
+                    SizedBox(width: 10),
+                    _buildTab('History', 1),
+                    SizedBox(width: 10),
+                    _buildTab('Analytics', 2),
+                    SizedBox(width: 10),
+                    _buildTab('Stats', 3),
+                    SizedBox(width: 10),
+                    _buildTab('Friends', 4),
+                    SizedBox(width: 10),
+                    _buildTab('Memories', 5),
+                  ],
+                ),
               ),
             ),
 
@@ -114,15 +126,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Content based on tab
             Expanded(
-              child: SingleChildScrollView(
-                child: selectedTab == 0
-                    ? _buildTodayTab()
-                    : selectedTab == 1
-                        ? _buildHistoryTab()
-                        : selectedTab == 2
-                            ? _buildFriendsTab()
-                            : _buildMemoriesTab(),
-              ),
+              child: selectedTab == 0
+                  ? SingleChildScrollView(child: _buildTodayTab())
+                  : selectedTab == 1
+                      ? RideHistoryList(userId: 'user_001')
+                      : selectedTab == 2
+                          ? RideAnalyticsPage(userId: 'user_001')
+                          : selectedTab == 3
+                              ? SingleChildScrollView(child: _buildStatsTab())
+                              : selectedTab == 4
+                                  ? SingleChildScrollView(child: _buildFriendsTab())
+                                  : SingleChildScrollView(child: _buildMemoriesTab()),
             ),
           ],
         ),
@@ -285,6 +299,43 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildStatsTab() {
+    return FutureBuilder<RideStats>(
+      future: _loadStats(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(40),
+              child: Text(
+                'Error loading stats',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          );
+        }
+        return Padding(
+          padding: EdgeInsets.all(16),
+          child: RideStatsWidget(stats: snapshot.data ?? RideStats.empty()),
+        );
+      },
+    );
+  }
+
+  Future<RideStats> _loadStats() async {
+    final service = RideHistoryService();
+    final rides = await service.getUserRides('user_001');
+    return await service.calculateStats(rides);
   }
 
   Widget _buildHistoryTab() {
