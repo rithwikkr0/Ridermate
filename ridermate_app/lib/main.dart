@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'services/friend_service.dart';
+import 'services/ride_room_service.dart';
+import 'services/location_service.dart';
+import 'services/websocket_handler.dart';
+import 'screens/social_hub_screen.dart';
 
 void main() {
   runApp(RiderMateApp());
@@ -34,6 +39,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isRiding = false;
   int selectedTab = 0;
 
+  // Initialize social services
+  late FriendService friendService;
+  late RideRoomService roomService;
+  late LocationService locationService;
+  late WebSocketHandler webSocketHandler;
+  
+  // Mock current user data
+  final String currentUserId = 'user123';
+  final String currentUserName = 'Current User';
+
   List<RideHistory> rideHistory = [
     RideHistory('Route 1', 25.3, 45, DateTime.now().subtract(Duration(days: 1))),
     RideHistory('Route 2', 15.7, 32, DateTime.now().subtract(Duration(days: 2))),
@@ -47,10 +62,48 @@ class _HomeScreenState extends State<HomeScreen> {
     Memory('Park Trail', 13.05, 77.62, 'Scenic route', 'private', 0),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize services
+    friendService = FriendService();
+    roomService = RideRoomService();
+    locationService = LocationService();
+    webSocketHandler = WebSocketHandler();
+    
+    // Connect WebSocket (in production, this would use real auth)
+    // webSocketHandler.connect(currentUserId);
+  }
+
+  @override
+  void dispose() {
+    // Clean up services
+    friendService.dispose();
+    roomService.dispose();
+    locationService.dispose();
+    webSocketHandler.dispose();
+    super.dispose();
+  }
+
   void startRide() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => RideScreen()),
+    );
+  }
+  
+  void openSocialHub() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SocialHubScreen(
+          friendService: friendService,
+          roomService: roomService,
+          locationService: locationService,
+          currentUserId: currentUserId,
+          currentUserName: currentUserName,
+        ),
+      ),
     );
   }
 
@@ -97,16 +150,21 @@ class _HomeScreenState extends State<HomeScreen> {
             // Tab Navigation
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _buildTab('Today', 0),
-                  SizedBox(width: 10),
-                  _buildTab('History', 1),
-                  SizedBox(width: 10),
-                  _buildTab('Friends', 2),
-                  SizedBox(width: 10),
-                  _buildTab('Memories', 3),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTab('Today', 0),
+                    SizedBox(width: 10),
+                    _buildTab('History', 1),
+                    SizedBox(width: 10),
+                    _buildTab('Friends', 2),
+                    SizedBox(width: 10),
+                    _buildTab('Memories', 3),
+                    SizedBox(width: 10),
+                    _buildTab('Social', 4),
+                  ],
+                ),
               ),
             ),
 
@@ -121,7 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? _buildHistoryTab()
                         : selectedTab == 2
                             ? _buildFriendsTab()
-                            : _buildMemoriesTab(),
+                            : selectedTab == 3
+                                ? _buildMemoriesTab()
+                                : _buildSocialTab(),
               ),
             ),
           ],
@@ -367,6 +427,148 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         ...memories.map((memory) => _buildMemoryCard(memory)).toList(),
       ],
+    );
+  }
+
+  Widget _buildSocialTab() {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            'Social Features',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        
+        // Social hub card
+        Container(
+          margin: EdgeInsets.all(20),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: openSocialHub,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0066FF), Color(0xFF004499)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.people, size: 64, color: Colors.white),
+                    SizedBox(height: 16),
+                    Text(
+                      'Open Social Hub',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Connect with friends, join ride rooms,\nand share your location',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Features list
+        _buildFeatureCard(
+          icon: Icons.person_add,
+          title: 'Friend System',
+          description: 'Search users, send requests, manage friends',
+          color: Color(0xFF0066FF),
+        ),
+        _buildFeatureCard(
+          icon: Icons.groups,
+          title: 'Ride Rooms',
+          description: 'Create or join group rides with friends',
+          color: Color(0xFF4CAF50),
+        ),
+        _buildFeatureCard(
+          icon: Icons.location_on,
+          title: 'Live Location',
+          description: 'Share your location with friends in real-time',
+          color: Color(0xFFFF6B35),
+        ),
+        _buildFeatureCard(
+          icon: Icons.chat,
+          title: 'Group Chat',
+          description: 'Chat with participants in ride rooms',
+          color: Color(0xFF9C27B0),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeatureCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3), width: 2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
