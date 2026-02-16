@@ -55,6 +55,8 @@ export const RideTrackingPage: React.FC = () => {
       setShowOverspeedWarning(true);
       const timer = setTimeout(() => setShowOverspeedWarning(false), 3000);
       return () => clearTimeout(timer);
+    } else {
+      setShowOverspeedWarning(false);
     }
   }, [metrics.currentSpeed, rideState]);
 
@@ -99,9 +101,9 @@ export const RideTrackingPage: React.FC = () => {
 
   // Auto-start GPS tracking when component mounts
   useEffect(() => {
-    if (rideState === RideState.IDLE && !isGPSTracking) {
-      startTracking();
-    }
+    startTracking();
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const accuracyClass = accuracy < 20 ? 'good' : accuracy < 50 ? 'medium' : 'poor';
