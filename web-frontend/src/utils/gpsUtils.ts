@@ -69,9 +69,21 @@ export function isValidCoordinate(latitude: number, longitude: number): boolean 
  * Validate location point accuracy
  * @param accuracy Accuracy in meters
  * @returns true if accuracy is acceptable (< 50m)
+ * 
+ * Note: 50m threshold is chosen as a balance between:
+ * - Urban areas: Typical GPS accuracy is 5-10m with good signal
+ * - Suburban areas: Accuracy degrades to 20-30m
+ * - GPS standard: Commercial GPS has ~15m typical accuracy
+ * - Ride tracking: 50m allows sufficient accuracy for route tracking
+ *   while filtering out very poor signals that would distort metrics
+ * 
+ * For production use, consider making this configurable based on:
+ * - Use case (urban cycling vs. rural mountain biking)
+ * - Device capabilities (phone GPS vs. dedicated GPS unit)
+ * - Required precision (casual tracking vs. competitive timing)
  */
-export function isAccurateLocation(accuracy: number): boolean {
-  return accuracy < 50; // Consider locations with accuracy better than 50m
+export function isAccurateLocation(accuracy: number, threshold: number = 50): boolean {
+  return accuracy < threshold;
 }
 
 /**
