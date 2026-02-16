@@ -235,6 +235,9 @@ class LocationService {
     }
   }
   
+  // Constant for degree to radian conversion
+  static const _degreesToRadiansMultiplier = pi / 180;
+  
   /// Calculate distance between two locations in kilometers
   double calculateDistance(
     double lat1,
@@ -247,19 +250,21 @@ class LocationService {
     final dLat = _degreesToRadians(lat2 - lat1);
     final dLon = _degreesToRadians(lon2 - lon1);
     
-    final a = 
-      (dLat / 2).sin() * (dLat / 2).sin() +
-      _degreesToRadians(lat1).cos() * 
-      _degreesToRadians(lat2).cos() *
-      (dLon / 2).sin() * (dLon / 2).sin();
+    final sinHalfDLat = sin(dLat / 2);
+    final sinHalfDLon = sin(dLon / 2);
+    final cosLat1 = cos(_degreesToRadians(lat1));
+    final cosLat2 = cos(_degreesToRadians(lat2));
     
-    final c = 2 * a.sqrt().asin();
+    final a = sinHalfDLat * sinHalfDLat +
+        cosLat1 * cosLat2 * sinHalfDLon * sinHalfDLon;
+    
+    final c = 2 * asin(sqrt(a));
     
     return earthRadius * c;
   }
   
   double _degreesToRadians(double degrees) {
-    return degrees * (pi / 180);
+    return degrees * _degreesToRadiansMultiplier;
   }
   
   /// Get my current location
